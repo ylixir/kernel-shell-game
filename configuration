@@ -1,0 +1,40 @@
+# this file contains the configuration variables for the main script
+# vim: noai:ts=4:sw=4
+
+# basically our working directory
+BASE_DIR=`pwd`
+
+# target and sources for our chroor
+ROOT_TARGET=build_environment
+ROOT_SUITE=wheezy
+ROOT_SOURCE=http://http.debian.net/debian
+REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf,ccache,git,kernel-wedge,libncursesw5-dev
+
+# debootstrap sources and working directory
+DEBOOT_DEB=debootstrap_1.0.55_all.deb
+DEBOOT_SRC=http://ftp.debian.org/debian/pool/main/d/debootstrap
+DEBOOT_TMP=deboot_working
+
+# this patch from http://blog.tsunanet.net/2013/01/using-debootstrap-with-grsec.html?m=1
+# it fixed deboot throwing an error when it tries to mount the proc system
+MOUNT_PATCH="--- usr/share/debootstrap/functions.orig	2013-11-26 07:15:53.909242727 -0600
++++ usr/share/debootstrap/functions	2013-11-26 07:17:39.464665969 -0600
+@@ -998,12 +998,14 @@
+ 		umount_on_exit /proc/bus/usb
+ 		umount_on_exit /proc
+ 		umount "'"'"\$TARGET/proc"'"'" 2>/dev/null || true
+-		in_target mount -t proc proc /proc
++#		in_target mount -t proc proc /proc
++		sudo mount -o bind /proc "'"'"\$TARGET/proc"'"'"
+ 		if [ -d "'"'"\$TARGET/sys"'"'" ] && \\
+ 		   grep -q '[[:space:]]sysfs' /proc/filesystems 2>/dev/null; then
+ 			umount_on_exit /sys
+ 			umount "'"'"\$TARGET/sys"'"'" 2>/dev/null || true
+-			in_target mount -t sysfs sysfs /sys
++#			in_target mount -t sysfs sysfs /sys
++			sudo mount -o bin /sys "'"'"\$TARGET/sys"'"'"
+ 		fi
+ 		on_exit clear_mtab
+ 		;;
+"
+
