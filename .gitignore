@@ -1,0 +1,4 @@
+#ignore vim temp files
+.*.swp
+#ignore subdirectories
+*/
