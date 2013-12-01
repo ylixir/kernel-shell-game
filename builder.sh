@@ -46,6 +46,14 @@ case "$1" in
     patch_deboot
     echo "Creating the chroot build environment"
     deboot_chroot
+    echo "Upgrading the chroot system"
+    upgrade_chroot
+    echo "Installing build tools"
+    install_build_tools
+    ;;
+  update)
+    echo "Upgrading the chroot system"
+    upgrade_chroot
     ;;
 esac
 exit 0

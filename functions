@@ -39,7 +39,7 @@ get_deboot ()
   cd $BASE_DIR/$DEBOOT_DIR;
   wget -c $DEBOOT_SRC/$DEBOOT_DEB;
   ar -x $DEBOOT_DEB;
-  tar -xf data.tar.xz;
+  tar -xzf data.tar.gz;
   cd $BASE_DIR;
 }
 
@@ -47,22 +47,44 @@ get_deboot ()
 deboot_chroot ()
 {
   # do the bootstrap
-  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --arch=$ROOT_ARCH --include=$REQUIRED_PACKAGES --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
+  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --variant=buildd --arch=$ROOT_ARCH --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
   
   #deboot feels the need to mount proc, we don't need it here
   umount $BASE_DIR/$ROOT_TARGET/proc;
 
-  #stop dpkg from running daemons
+#stop dpkg from running daemons
 cat > $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d <<EOF
 #!/bin/sh
 exit 101
 EOF
   chmod a+x $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d;
 
+# update the chroot's sources.list
+cat > $BASE_DIR/$ROOT_TARGET/etc/apt/sources.list <<EOF
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted universe multiverse
+EOF
+
   #divert ischroot
   #note that this throws error, my need to be fixed, not sure
   chroot $BASE_DIR/$ROOT_TARGET dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot;
   chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot;
+
+  chroot $BASE_DIR/$ROOT_TARGET dpkg -i /var/cache/apt/archives/apt_*.deb;
+}
+
+# bring the chroot current
+upgrade_chroot ()
+{
+  chroot $BASE_DIR/$ROOT_TARGET apt-get update;
+  chroot $BASE_DIR/$ROOT_TARGET apt-get dist-upgrade;
+}
+
+# install required packages in the chroot
+install_build_tools ()
+{
+  chroot $BASE_DIR/$ROOT_TARGET apt-get install $REQUIRED_PACKAGES;
 }
 
 # this function gets the architecture for our chroot

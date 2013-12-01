@@ -26,11 +26,13 @@ BASE_DIR=`pwd`
 
 # target and sources for our chroot
 ROOT_TARGET=build_environment
-ROOT_SUITE=wheezy
-ROOT_SOURCE=http://http.debian.net/debian
+#ROOT_SUITE=wheezy
+#ROOT_SOURCE=http://http.debian.net/debian
+ROOT_SUITE=saucy
+ROOT_SOURCE=http://archive.ubuntu.com/ubuntu/
 # these packages will be installed into the chroot build environment
 # and are needed to build the kernel
-REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf,ccache,kernel-wedge,libncursesw5-dev
+REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf ccache kernel-wedge libncursesw5-dev
 
 # the script should be able to figure this out, but you can override
 # or set it manually here, leaving it blank is fine
@@ -38,6 +40,7 @@ ROOT_ARCH=
 
 # debootstrap sources and working directory
 DEBOOT_DEB=debootstrap_1.0.55_all.deb
+#DEBOOT_DEB=debootstrap_1.0.48+deb7u1_all.deb
 DEBOOT_SRC=http://ftp.debian.org/debian/pool/main/d/debootstrap
 DEBOOT_DIR=deboot_working
 
