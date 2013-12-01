@@ -19,42 +19,42 @@
 # this is the main script for controlling the build environment and such
 
 source configuration
+source functions
 
-if [ 'clean' == "$1" ]; then
-  echo "Removing the debian chroot"
-  rm -rf $ROOT_TARGET
-  rm -rf $DEBOOT_TMP
-  exit 0;
+# figure out what architecture we want for our chroot
+# but only if it wasn't manually set in the configuration file
+if [ -z "$ROOT_ARCH" ]; then
+  get_architecture;
+  echo "Selecting $ROOT_ARCH arcitecture for you";
+else
+  echo "Using $ROOT_ARCH architecture from configuration file";
 fi
 
-MACHINE_TYPE=`uname -m`
-case "$MACHINE_TYPE" in
-  i?86)
-    echo "Selecting i386 architecture"
-    ARCH=i386
+# decide what to do depending on the first command line parameter
+case "$1" in
+  clean)
+    echo "Cleaning out the deboot, chroot, and kernel directories"
+    clean_directories
+    exit 0
     ;;
-  x86_64)
-    echo "Selecting amd64 architecture"
-    ARCH=amd64
-    ;;
-  *)
-    echo "Your machine is not supported by this script"
-    exit 1
+  setup)
+    echo "Creating the deboot, chroot, and kernel directories"
+    create_directories
+    echo "Setting up deboot"
+    get_deboot
+    echo "Patching deboot"
+    patch_deboot
+    echo "Creating the chroot build environment"
+    deboot_chroot
     ;;
 esac
-
-mkdir -p $DEBOOT_TMP
-cd $DEBOOT_TMP
-wget -c $DEBOOT_SRC/$DEBOOT_DEB
-ar -x $DEBOOT_DEB
-tar -xf data.tar.xz
-printf '%s' "$MOUNT_PATCH"|patch --ignore-whitespace --verbose usr/share/debootstrap/functions
+exit 0
 
 cd $BASE_DIR
 mkdir -p $ROOT_TARGET
-DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_TMP/usr/share/debootstrap
+DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap
 export DEBOOTSTRAP_DIR
-$BASE_DIR/$DEBOOT_TMP/usr/sbin/debootstrap --arch=$ARCH --include=$REQUIRED_PACKAGES --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE
+$BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --arch=$ROOT_ARCH --include=$REQUIRED_PACKAGES --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE
 
 echo Unmounting proc from chroot
 umount $BASE_DIR/$ROOT_TARGET/proc
