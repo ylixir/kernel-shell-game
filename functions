@@ -71,7 +71,6 @@ EOF
   chroot $BASE_DIR/$ROOT_TARGET dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot;
   chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot;
 
-  chroot $BASE_DIR/$ROOT_TARGET dpkg -i /var/cache/apt/archives/apt_*.deb;
 }
 
 # bring the chroot current
