@@ -33,13 +33,24 @@ create_directories ()
   mkdir -p $BASE_DIR/$KERNEL_DIR
 }
 
+#do path magic
+ORIGINAL_PATH=$PATH
+set_path ()
+{
+  ORIGINAL_PATH=$PATH;
+  PATH=$DUAL_PATH;
+}
+reset_path ()
+{
+  PATH=$ORIGINAL_PATH
+}
 # this function gets the debootstrap package and unpacks it into the appropriate directory, all ready to be used
 get_deboot ()
 {
   cd $BASE_DIR/$DEBOOT_DIR;
   wget -c $DEBOOT_SRC/$DEBOOT_DEB;
   ar -x $DEBOOT_DEB;
-  tar -xzf data.tar.gz;
+  tar -xf data.tar.xz;
   cd $BASE_DIR;
 }
 
@@ -47,8 +58,9 @@ get_deboot ()
 deboot_chroot ()
 {
   # do the bootstrap
-  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --variant=buildd --arch=$ROOT_ARCH --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
-  
+  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --foreign --arch=$ROOT_ARCH --variant=buildd --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
+  #do the second stage bootstrap
+  chroot $BASE_DIR/$ROOT_TARGET /debootstrap/debootstrap --second-stage;
   #deboot feels the need to mount proc, we don't need it here
   umount $BASE_DIR/$ROOT_TARGET/proc;
 

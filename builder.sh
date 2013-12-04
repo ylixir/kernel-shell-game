@@ -38,18 +38,22 @@ case "$1" in
     exit 0
     ;;
   setup)
+    echo "Setting up PATH"
+    set_path
     echo "Creating the deboot, chroot, and kernel directories"
     create_directories
     echo "Setting up deboot"
     get_deboot
-    echo "Patching deboot"
-    patch_deboot
+# could probably split deboot into the two stages it takes
     echo "Creating the chroot build environment"
     deboot_chroot
+# we need to set up locales and probably bind stuff like proc and pts here
     echo "Upgrading the chroot system"
     upgrade_chroot
     echo "Installing build tools"
     install_build_tools
+    echo "Restoring PATH"
+    reset_path
     ;;
   update)
     echo "Upgrading the chroot system"
@@ -58,25 +62,3 @@ case "$1" in
 esac
 exit 0
 
-cd $BASE_DIR
-mkdir -p $ROOT_TARGET
-DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap
-export DEBOOTSTRAP_DIR
-$BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --arch=$ROOT_ARCH --include=$REQUIRED_PACKAGES --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE
-
-echo Unmounting proc from chroot
-umount $BASE_DIR/$ROOT_TARGET/proc
-
-#stop dpkg from running daemons
-echo Disabling dpkg daemons
-cat > $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d <<EOF
-#!/bin/sh
-exit 101
-EOF
-chmod a+x $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d
-
-#divert ischroot
-#note that this throws error, my need to be fixed, not sure
-echo Diverting ischroot
-chroot $BASE_DIR/$ROOT_TARGET dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot
-chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot

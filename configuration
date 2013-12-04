@@ -23,7 +23,10 @@
 # if you want the script to dump everything in a different
 # location from where the script is run
 BASE_DIR=`pwd`
-
+#this is the path that will be used while the script is running
+#it should contain paths to keep the host system and the chroot
+#functional
+DUAL_PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 # target and sources for our chroot
 ROOT_TARGET=build_environment
 #ROOT_SUITE=wheezy
@@ -32,7 +35,7 @@ ROOT_SUITE=saucy
 ROOT_SOURCE=http://archive.ubuntu.com/ubuntu/
 # these packages will be installed into the chroot build environment
 # and are needed to build the kernel
-REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf ccache kernel-wedge libncursesw5-dev
+REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf\ ccache\ kernel-wedge\ libncursesw5-dev
 
 # the script should be able to figure this out, but you can override
 # or set it manually here, leaving it blank is fine
