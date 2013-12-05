@@ -29,10 +29,14 @@ BASE_DIR=`pwd`
 DUAL_PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 # target and sources for our chroot
 ROOT_TARGET=build_environment
-#ROOT_SUITE=wheezy
-#ROOT_SOURCE=http://http.debian.net/debian
 ROOT_SUITE=saucy
 ROOT_SOURCE=http://archive.ubuntu.com/ubuntu/
+ROOT_LOCALE=en_US.UTF-8\ UTF-8
+ROOT_SOURCES_LIST="
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted universe multiverse
+"
 # these packages will be installed into the chroot build environment
 # and are needed to build the kernel
 REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf\ ccache\ kernel-wedge\ libncursesw5-dev

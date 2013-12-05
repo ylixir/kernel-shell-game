@@ -45,13 +45,22 @@ case "$1" in
     echo "Setting up deboot"
     get_deboot
 # could probably split deboot into the two stages it takes
-    echo "Creating the chroot build environment"
-    deboot_chroot
-# we need to set up locales and probably bind stuff like proc and pts here
+#    echo "Creating the chroot build environment"
+#    deboot_chroot
+    echo "Bootstrapping stage one"
+    deboot_stage_one
+    echo "Setting up mountpoints"
+    do_mount
+    echo "Bootstrapping stage two"
+    deboot_stage_two
+    echo "Doing post install setup"
+    deboot_setup
     echo "Upgrading the chroot system"
     upgrade_chroot
     echo "Installing build tools"
     install_build_tools
+    echo "Undoing mountpoints"
+    do_unmount
     echo "Restoring PATH"
     reset_path
     ;;

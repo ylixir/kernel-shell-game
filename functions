@@ -31,6 +31,7 @@ create_directories ()
   mkdir -p $BASE_DIR/$DEBOOT_DIR
   mkdir -p $BASE_DIR/$ROOT_TARGET
   mkdir -p $BASE_DIR/$KERNEL_DIR
+  mkdir -p $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR
 }
 
 #do path magic
@@ -44,6 +45,24 @@ reset_path ()
 {
   PATH=$ORIGINAL_PATH
 }
+#do the mount magic
+do_mount ()
+{
+  mount -o bind $BASE_DIR/$KERNEL_DIR $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
+  mount -t proc proc $BASE_DIR/$ROOT_TARGET/proc/;
+  mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/;
+  mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/;
+  mount -t devpts pts $BASE_DIR/$ROOT_TARGET/dev/pts/;
+}
+do_unmount ()
+{
+  umount $BASE_DIR/$ROOT_TARGET/dev/pts/;
+  umount $BASE_DIR/$ROOT_TARGET/dev/;
+  umount $BASE_DIR/$ROOT_TARGET/sys/;
+  umount $BASE_DIR/$ROOT_TARGET/proc/;
+  umount $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
+}
+
 # this function gets the debootstrap package and unpacks it into the appropriate directory, all ready to be used
 get_deboot ()
 {
@@ -55,6 +74,38 @@ get_deboot ()
 }
 
 # this function just creates the chroot environment
+deboot_stage_one ()
+{
+  # do the bootstrap
+  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --foreign --arch=$ROOT_ARCH --variant=buildd --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
+}
+deboot_stage_two ()
+{
+  #do the second stage bootstrap
+  chroot $BASE_DIR/$ROOT_TARGET /debootstrap/debootstrap --second-stage;
+}
+deboot_setup ()
+{
+#stop dpkg from running daemons
+cat > $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+exit 101
+EOF
+  chmod a+x $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d;
+
+  # update the chroot's sources.list
+  printf '%s' "$ROOT_SOURCES_LIST" >$BASE_DIR/$ROOT_TARGET/etc/apt/sources.list;
+  
+  #update the locale
+  printf '%s' "$ROOT_LOCALE" >$BASE_DIR/$ROOT_TARGET/etc/locale.gen;
+  chroot $BASE_DIR/$ROOT_TARGET /usr/sbin/locale-gen
+
+  #divert ischroot
+  #note that this throws error, my need to be fixed, not sure
+  chroot $BASE_DIR/$ROOT_TARGET dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot;
+  chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot;
+
+}
 deboot_chroot ()
 {
   # do the bootstrap
@@ -72,11 +123,13 @@ EOF
   chmod a+x $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d;
 
 # update the chroot's sources.list
-cat > $BASE_DIR/$ROOT_TARGET/etc/apt/sources.list <<EOF
-deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-updates main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted universe multiverse
-EOF
+#cat > $BASE_DIR/$ROOT_TARGET/etc/apt/sources.list <<EOF
+#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE main restricted universe multiverse
+#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-updates main restricted universe multiverse
+#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted universe multiverse
+#EOF
+  printf '%s' "$ROOT_SOURCES_LIST"
+    >$BASE_DIR/$ROOT_TARGET/etc/apt/sources.list;
 
   #divert ischroot
   #note that this throws error, my need to be fixed, not sure
@@ -88,14 +141,14 @@ EOF
 # bring the chroot current
 upgrade_chroot ()
 {
-  chroot $BASE_DIR/$ROOT_TARGET apt-get update;
-  chroot $BASE_DIR/$ROOT_TARGET apt-get dist-upgrade;
+  chroot $BASE_DIR/$ROOT_TARGET apt-get -qy update;
+  chroot $BASE_DIR/$ROOT_TARGET apt-get -qy dist-upgrade;
 }
 
 # install required packages in the chroot
 install_build_tools ()
 {
-  chroot $BASE_DIR/$ROOT_TARGET apt-get install $REQUIRED_PACKAGES;
+  chroot $BASE_DIR/$ROOT_TARGET apt-get -qy install $REQUIRED_PACKAGES;
 }
 
 # this function gets the architecture for our chroot
@@ -117,6 +170,8 @@ get_architecture ()
   esac;
 }
 
+# this patch was attempting to fix a problem that was actually a path
+# problem, so it's currently not used, but left in case it's needed later
 # deboot comes out of the box with an offensive mount command.
 # this patches it to fix the error when mounting the proc file system
 # this patch from http://blog.tsunanet.net/2013/01/using-debootstrap-with-grsec.html?m=1
