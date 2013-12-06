@@ -56,7 +56,7 @@ do_mount ()
   mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/;
   echo "mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/"
   mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/;
-  echo "mount -t devpts devpts $BASE_DIR/$ROOT_TARGET/dev/pts/"
+  echo "mount -t devpts devpts -o mode=620,gid=5 $BASE_DIR/$ROOT_TARGET/dev/pts/"
   mount -t devpts devpts -o mode=620,gid=5 $BASE_DIR/$ROOT_TARGET/dev/pts/;
 }
 do_unmount ()

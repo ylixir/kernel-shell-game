@@ -63,11 +63,20 @@ case "$1" in
     deboot_stage_two
     echo "Doing post install setup"
     deboot_setup
+#somewhere along the line, deboot seems to be unmounting stuff
+    echo "Remounting file systems"
+    sleep 1
+    do_unmount
+    sleep 1
+    do_mount
     echo "Upgrading the chroot system"
     upgrade_chroot
     echo "Installing build tools"
     install_build_tools
     echo "Undoing mountpoints"
+#seems to be doing something if we try to unstantly unmount
+#/dev so give it a sec to finish
+    sleep 1
     do_unmount
     echo "Restoring PATH"
     reset_path
