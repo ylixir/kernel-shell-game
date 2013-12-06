@@ -37,6 +37,14 @@ case "$1" in
     clean_directories
     exit 0
     ;;
+  mount)
+    echo "Mounting chroot filesystems"
+    do_mount
+    ;;
+  unmount)
+    echo "Un mounting chroot filesystems"
+    do_unmount
+    ;;
   setup)
     echo "Setting up PATH"
     set_path

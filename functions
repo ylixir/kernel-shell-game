@@ -48,11 +48,16 @@ reset_path ()
 #do the mount magic
 do_mount ()
 {
+  echo "mount -o bind $BASE_DIR/$KERNEL_DIR $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR"
   mount -o bind $BASE_DIR/$KERNEL_DIR $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
+  echo "mount -t proc proc $BASE_DIR/$ROOT_TARGET/proc/"
   mount -t proc proc $BASE_DIR/$ROOT_TARGET/proc/;
+  echo "mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/"
   mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/;
+  echo "mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/"
   mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/;
-  mount -t devpts pts $BASE_DIR/$ROOT_TARGET/dev/pts/;
+  echo "mount -t devpts devpts $BASE_DIR/$ROOT_TARGET/dev/pts/"
+  mount -t devpts devpts -o mode=620,gid=5 $BASE_DIR/$ROOT_TARGET/dev/pts/;
 }
 do_unmount ()
 {
