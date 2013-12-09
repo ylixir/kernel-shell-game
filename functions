@@ -48,19 +48,16 @@ reset_path ()
 #do the mount magic
 do_mount ()
 {
-  echo "mount -o bind $BASE_DIR/$KERNEL_DIR $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR"
+  sleep 1;
   mount -o bind $BASE_DIR/$KERNEL_DIR $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
-  echo "mount -t proc proc $BASE_DIR/$ROOT_TARGET/proc/"
   mount -t proc proc $BASE_DIR/$ROOT_TARGET/proc/;
-  echo "mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/"
   mount -t sysfs sys $BASE_DIR/$ROOT_TARGET/sys/;
-  echo "mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/"
   mount -o bind /dev $BASE_DIR/$ROOT_TARGET/dev/;
-  echo "mount -t devpts devpts -o mode=620,gid=5 $BASE_DIR/$ROOT_TARGET/dev/pts/"
   mount -t devpts devpts -o mode=620,gid=5 $BASE_DIR/$ROOT_TARGET/dev/pts/;
 }
 do_unmount ()
 {
+  sleep 1;
   umount $BASE_DIR/$ROOT_TARGET/dev/pts/;
   umount $BASE_DIR/$ROOT_TARGET/dev/;
   umount $BASE_DIR/$ROOT_TARGET/sys/;
@@ -111,37 +108,6 @@ EOF
   chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot;
 
 }
-deboot_chroot ()
-{
-  # do the bootstrap
-  DEBOOTSTRAP_DIR=$BASE_DIR/$DEBOOT_DIR/usr/share/debootstrap $BASE_DIR/$DEBOOT_DIR/usr/sbin/debootstrap --foreign --arch=$ROOT_ARCH --variant=buildd --no-check-gpg $ROOT_SUITE $BASE_DIR/$ROOT_TARGET $ROOT_SOURCE;
-  #do the second stage bootstrap
-  chroot $BASE_DIR/$ROOT_TARGET /debootstrap/debootstrap --second-stage;
-  #deboot feels the need to mount proc, we don't need it here
-  umount $BASE_DIR/$ROOT_TARGET/proc;
-
-#stop dpkg from running daemons
-cat > $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d <<EOF
-#!/bin/sh
-exit 101
-EOF
-  chmod a+x $BASE_DIR/$ROOT_TARGET/usr/sbin/policy-rc.d;
-
-# update the chroot's sources.list
-#cat > $BASE_DIR/$ROOT_TARGET/etc/apt/sources.list <<EOF
-#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE main restricted universe multiverse
-#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-updates main restricted universe multiverse
-#deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted universe multiverse
-#EOF
-  printf '%s' "$ROOT_SOURCES_LIST"
-    >$BASE_DIR/$ROOT_TARGET/etc/apt/sources.list;
-
-  #divert ischroot
-  #note that this throws error, my need to be fixed, not sure
-  chroot $BASE_DIR/$ROOT_TARGET dpkg-divert --divert /usr/bin/ischroot.debianutils --rename /usr/bin/ischroot;
-  chroot $BASE_DIR/$ROOT_TARGET /bin/ln -s /bin/true /usr/bin/ischroot;
-
-}
 
 # bring the chroot current
 upgrade_chroot ()
@@ -175,6 +141,25 @@ get_architecture ()
   esac;
 }
 
+#functions for managing the kernel source
+kernel_get ()
+{
+  git clone $KERNEL_REPO $BASE_DIR/$KERNEL_DIR;
+}
+#see https://wiki.ubuntu.com/Nexus7/Kernel for more information
+kernel_build ()
+{
+  set_path;
+  do_mount;
+  cd $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
+  git clean -xdf;
+  sed -i '/do_tools/ s/true/false/' debian.nexus7/rules.d/armhf.mk;
+  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; fakeroot debian/rules clean";
+  chroot $BASE_DIR/$ROOT_TARGET su - -c 'cd /'$KERNEL_DIR'; debuild -eDEB_BUILD_OPTIONS="parallel='$BUILD_PROCESSES'" -eCROSS_COMPILE="ccache arm-linux-gnueabihf-" -b -aarmhf -us -uc -nc';
+  cd $BASE_DIR;
+  do_unmount;
+  reset_path;
+}
 # this patch was attempting to fix a problem that was actually a path
 # problem, so it's currently not used, but left in case it's needed later
 # deboot comes out of the box with an offensive mount command.

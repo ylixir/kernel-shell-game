@@ -52,9 +52,6 @@ case "$1" in
     create_directories
     echo "Setting up deboot"
     get_deboot
-# could probably split deboot into the two stages it takes
-#    echo "Creating the chroot build environment"
-#    deboot_chroot
     echo "Bootstrapping stage one"
     deboot_stage_one
     echo "Setting up mountpoints"
@@ -65,18 +62,13 @@ case "$1" in
     deboot_setup
 #somewhere along the line, deboot seems to be unmounting stuff
     echo "Remounting file systems"
-    sleep 1
     do_unmount
-    sleep 1
     do_mount
     echo "Upgrading the chroot system"
     upgrade_chroot
     echo "Installing build tools"
     install_build_tools
     echo "Undoing mountpoints"
-#seems to be doing something if we try to unstantly unmount
-#/dev so give it a sec to finish
-    sleep 1
     do_unmount
     echo "Restoring PATH"
     reset_path
@@ -84,6 +76,18 @@ case "$1" in
   update)
     echo "Upgrading the chroot system"
     upgrade_chroot
+    ;;
+  kernel)
+    case "$2" in
+      get)
+        echo "Cloning the kernel's source"
+        kernel_get
+        ;;
+      build)
+        echo "Building the kernel"
+        kernel_build
+        ;;
+    esac
     ;;
 esac
 exit 0

@@ -39,7 +39,7 @@ deb http://archive.ubuntu.com/ubuntu $ROOT_SUITE-security main restricted univer
 "
 # these packages will be installed into the chroot build environment
 # and are needed to build the kernel
-REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf\ ccache\ kernel-wedge\ libncursesw5-dev
+REQUIRED_PACKAGES=gcc-arm-linux-gnueabihf\ ccache\ kernel-wedge\ libncursesw5-dev\ devscripts\ fakeroot
 
 # the script should be able to figure this out, but you can override
 # or set it manually here, leaving it blank is fine
@@ -53,3 +53,6 @@ DEBOOT_DIR=deboot_working
 
 # directory where the kernel source tree is kept
 KERNEL_DIR=kernel_source
+KERNEL_REPO=git://kernel.ubuntu.com/ubuntu/ubuntu-nexus7.git
+#how many processes do you want the build to use?
+BUILD_PROCESSES=9
