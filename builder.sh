@@ -87,6 +87,10 @@ case "$1" in
         echo "Building the kernel"
         kernel_build
         ;;
+      boot)
+        echo "Booting the kernel"
+        kernel_boot
+        ;;
     esac
     ;;
 esac

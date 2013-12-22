@@ -53,6 +53,11 @@ DEBOOT_DIR=deboot_working
 
 # directory where the kernel source tree is kept
 KERNEL_DIR=kernel_source
-KERNEL_REPO=git://kernel.ubuntu.com/ubuntu/ubuntu-nexus7.git
+#KERNEL_REPO=git://kernel.ubuntu.com/ubuntu/ubuntu-nexus7.git
+KERNEL_REPO=https://github.com/ylixir/grouper-kernel.git
+KERNEL_OUT_DIR=kernel_target
+KERNEL_TARGET='vmlinuz-3.1.10-8-nexus7'
+RAMDISK_TARGET='initrd.img-3.1.10-8-nexus7'
+KERNEL_CMD_LINE='tegra_wdt.heartbeat=30 tegra_wdt.heartbeat=30 tegraid=30.1.3.0.0 mem=1022M@2048M android.commchip=0 vmalloc=512M androidboot.serialno=015d165c32300010 video=tegrafb no_console_suspend=1 console=none debug_uartport=hsport usbcore.old_scheme_first=1 lp0_vec=8192@0xbddf9000 tegra_fbmem=8195200@0xabe01000 core_edp_mv=0 audio_codec=rt5640 board_info=f41:a00:1:44:2 tegraboot=sdmmc gpt gpt_sector=30535679 androidboot.bootloader=4.23 androidboot.baseband=unknown   root=/dev/mmcblk0p9 rootfstype=ext4 rw console=tty0 fbcon=rotate:1 access=m2 splash rootflags=defaults,noatime,nodiratime quiet rootsubdir=/media/0/multirom/roms/arch_20130626/root'
 #how many processes do you want the build to use?
 BUILD_PROCESSES=9

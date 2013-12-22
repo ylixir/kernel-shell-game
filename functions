@@ -28,10 +28,11 @@ clean_directories ()
 # just make the directories we'll need
 create_directories ()
 {
-  mkdir -p $BASE_DIR/$DEBOOT_DIR
-  mkdir -p $BASE_DIR/$ROOT_TARGET
-  mkdir -p $BASE_DIR/$KERNEL_DIR
-  mkdir -p $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR
+  mkdir -p $BASE_DIR/$DEBOOT_DIR;
+  mkdir -p $BASE_DIR/$ROOT_TARGET;
+  mkdir -p $BASE_DIR/$KERNEL_DIR;
+  mkdir -p $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
+  mkdir -p $BASE_DIR/$KERNEL_OUT_DIR;
 }
 
 #do path magic
@@ -43,7 +44,7 @@ set_path ()
 }
 reset_path ()
 {
-  PATH=$ORIGINAL_PATH
+  PATH=$ORIGINAL_PATH;
 }
 #do the mount magic
 do_mount ()
@@ -159,6 +160,11 @@ kernel_build ()
   cd $BASE_DIR;
   do_unmount;
   reset_path;
+}
+kernel_boot ()
+{
+  echo $KERNEL_CMD_LINE;
+  fastboot boot $BASE_DIR/$KERNEL_OUT_DIR/$KERNEL_TARGET $BASE_DIR/$KERNEL_OUT_DIR/$RAMDISK_TARGET -c "$KERNEL_CMD_LINE";
 }
 # this patch was attempting to fix a problem that was actually a path
 # problem, so it's currently not used, but left in case it's needed later
