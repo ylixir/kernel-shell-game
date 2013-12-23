@@ -163,8 +163,12 @@ kernel_build ()
 }
 kernel_boot ()
 {
-  echo $KERNEL_CMD_LINE;
-  fastboot boot $BASE_DIR/$KERNEL_OUT_DIR/$KERNEL_TARGET $BASE_DIR/$KERNEL_OUT_DIR/$RAMDISK_TARGET -c "$KERNEL_CMD_LINE";
+  echo 'Creating test.img';
+  echo "cmdline=$KERNEL_CMD_LINE">$BASE_DIR/$KERNEL_OUT_DIR/cmd.txt
+  abootimg --create $BASE_DIR/$KERNEL_OUT_DIR/test.img -f $BASE_DIR/$KERNEL_OUT_DIR/cmd.txt -k $BASE_DIR/$KERNEL_OUT_DIR/$KERNEL_TARGET -r $BASE_DIR/$KERNEL_OUT_DIR/$RAMDISK_TARGET;
+#  fastboot boot $BASE_DIR/$KERNEL_OUT_DIR/$KERNEL_TARGET $BASE_DIR/$KERNEL_OUT_DIR/$RAMDISK_TARGET -c "$KERNEL_CMD_LINE";
+  echo 'Booting test.img';
+  fastboot boot $BASE_DIR/$KERNEL_OUT_DIR/test.img;
 }
 # this patch was attempting to fix a problem that was actually a path
 # problem, so it's currently not used, but left in case it's needed later
