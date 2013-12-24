@@ -158,9 +158,16 @@ kernel_build ()
   do_mount;
   cd $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
   git clean -xdf;
-  sed -i '/do_tools/ s/true/false/' debian.nexus7/rules.d/armhf.mk;
-  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; fakeroot debian/rules clean";
-  chroot $BASE_DIR/$ROOT_TARGET su - -c 'cd /'$KERNEL_DIR'; debuild -eDEB_BUILD_OPTIONS="parallel='$BUILD_PROCESSES'" -eCROSS_COMPILE="ccache arm-linux-gnueabihf-" -b -aarmhf -us -uc -nc';
+  export ARCH=arm;
+  export SUBARCH=arm;
+  export CROSS_COMPILE="ccache arm-linux-gnueabihf-"
+  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make mrproper";
+  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make grouper_ubuntu_defconfig";
+  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make";
+
+#  sed -i '/do_tools/ s/true/false/' debian.nexus7/rules.d/armhf.mk;
+#  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; fakeroot debian/rules clean";
+#  chroot $BASE_DIR/$ROOT_TARGET su - -c 'cd /'$KERNEL_DIR'; debuild -eDEB_BUILD_OPTIONS="parallel='$BUILD_PROCESSES'" -eCROSS_COMPILE="ccache arm-linux-gnueabihf-" -b -aarmhf -us -uc -nc';
   cd $BASE_DIR;
   do_unmount;
   reset_path;
