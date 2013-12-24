@@ -163,7 +163,7 @@ kernel_build ()
   export CROSS_COMPILE="ccache arm-linux-gnueabihf-"
   chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make mrproper";
   chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make grouper_ubuntu_defconfig";
-  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make";
+  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; make -j$BUILD_PROCESSES";
 
 #  sed -i '/do_tools/ s/true/false/' debian.nexus7/rules.d/armhf.mk;
 #  chroot $BASE_DIR/$ROOT_TARGET su - -c "cd /"$KERNEL_DIR"; fakeroot debian/rules clean";
