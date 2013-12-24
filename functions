@@ -147,6 +147,10 @@ kernel_get ()
 {
   git clone $KERNEL_REPO $BASE_DIR/$KERNEL_DIR;
 }
+kernel_pull ()
+{
+  git -C $BASE_DIR/$KERNEL_DIR pull;
+}
 #see https://wiki.ubuntu.com/Nexus7/Kernel for more information
 kernel_build ()
 {

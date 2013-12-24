@@ -83,6 +83,10 @@ case "$1" in
         echo "Cloning the kernel's source"
         kernel_get
         ;;
+      update)
+        echo "Pulling updated kernel sources"
+        kernel_pull
+        ;;
       build)
         echo "Building the kernel"
         kernel_build
