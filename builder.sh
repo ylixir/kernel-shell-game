@@ -80,8 +80,12 @@ case "$1" in
   chroot)
     echo "Mounting stuff"
     do_mount
+    echo "Setting up paths"
+    set_path
     echo "Entering chroot"
     enter_chroot
+    echo "Restoring paths"
+    reset_path
     echo "Unmounting stuff"
     do_unmount
     ;;
