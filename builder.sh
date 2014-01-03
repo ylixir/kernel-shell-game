@@ -77,6 +77,14 @@ case "$1" in
     echo "Upgrading the chroot system"
     upgrade_chroot
     ;;
+  chroot)
+    echo "Mounting stuff"
+    do_mount
+    echo "Entering chroot"
+    enter_chroot
+    echo "Unmounting stuff"
+    do_unmount
+    ;;
   kernel)
     case "$2" in
       get)

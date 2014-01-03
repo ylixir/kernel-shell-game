@@ -65,7 +65,10 @@ do_unmount ()
   umount $BASE_DIR/$ROOT_TARGET/proc/;
   umount $BASE_DIR/$ROOT_TARGET/$KERNEL_DIR;
 }
-
+enter_chroot ()
+{
+  chroot $BASE_DIR/$ROOT_TARGET /bin/bash;
+}
 # this function gets the debootstrap package and unpacks it into the appropriate directory, all ready to be used
 get_deboot ()
 {
